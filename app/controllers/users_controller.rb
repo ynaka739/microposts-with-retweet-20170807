@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
-  before_action :require_user_logged_in, only: [:index, :show, :followings, :followers, :fovorite_microposts]
+  before_action :require_user_logged_in, only: [:index, :show, :followings, :followers, :favorites]  
+  before_action :correct_user, only: [:edit, :update, :destroy]
 
   def index
     @users = User.all.page(params[:page])
@@ -26,6 +27,30 @@ class UsersController < ApplicationController
       render :new
     end
   end
+  
+  def edit
+    @user = User.find(params[:id])
+  end
+  
+  def update
+    @user = User.find(params[:id])
+    
+    if @user.update(user_params)
+      flash[:success] = 'ユーザー情報は正常に更新されました。'
+      redirect_to @user
+    else
+      flash.now[:danger] = 'ユーザー情報は更新されませんでした。'
+      render :edit
+    end
+  end
+  
+  def destroy
+    @user = User.find(params[:id])
+    @user.destroy
+    flash[:success] = 'ユーザー情報は正常に削除されました。'
+    redirect_to root_url
+  end
+ 
 
   def followings
     @user = User.find(params[:id])
@@ -50,4 +75,12 @@ class UsersController < ApplicationController
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
+  
+  def correct_user
+    @user = User.find_by(id: params[:id])
+    unless current_user == @user
+      redirect_back(fallback_location: root_path)
+    end
+  end
+  
 end
