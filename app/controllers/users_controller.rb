@@ -4,6 +4,7 @@ class UsersController < ApplicationController
 
   def index
     @users = User.all.page(params[:page])
+    @users = @users.search(params[:s]) if params[:s]
   end
 
   def show
